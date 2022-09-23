@@ -1,0 +1,1 @@
+export const numberToMoney = (n: number) => '$ ' + n

@@ -2,23 +2,37 @@ import { Product } from "@prisma/client"
 import { GetServerSideProps, NextPage } from "next"
 import React from "react"
 import NavBar from "../src/components/NavBar"
+import ProductCard from "../src/components/ProductCard"
+import { API_URL } from "../src/constants"
 import styles from "../styles/index.module.css"
 
 interface HomeProps {
   products: Product[]
 }
 
-const Home: NextPage<HomeProps> = ({ products }: HomeProps) => {
+const Home: NextPage<HomeProps> = ({products}: HomeProps) => {
   return (
     <div id={styles.appContainer}>
       <NavBar />
-      {/* Write code for displaying product listings */}
+      <ul style={{ display: "flex", listStyleType: "none", gap: "2em", flexWrap: "wrap" }}>
+        {products.map(p =>
+          <li key={p.id}>
+            <ProductCard
+              productName={p.name}
+              productDescription={p.description}
+              imgSrc={p.imgSrc}
+              productPrice={p.price as unknown as number}
+            />
+          </li>)}
+      </ul>
     </div>
   )
 }
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  // Write code for fetching product listings from API call
+export const getServerSideProps: GetServerSideProps = async () => {
+  const result = await fetch(API_URL + '/products')
+  const products = await result.json()
+  return { props: { products }  }
 }
 
 export default Home
