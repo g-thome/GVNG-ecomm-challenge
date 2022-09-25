@@ -2,9 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prismaClient from "../../../src/database";
 
 async function add(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return
+  if (req.method !== "POST") {
+    return res.status(405)
+  }
 
-  const { productId } = req.query
+  const { product: productId } = req.query
 
   if (!productId || Number(productId) === NaN) {
     res.status(400).json({

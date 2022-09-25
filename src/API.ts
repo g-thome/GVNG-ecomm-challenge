@@ -13,6 +13,10 @@ export class API {
   }
 
   static async addToCart(productId: number) {
-    return API.post(`/cart/add?productId=${productId}`, {})
+    return API.post(`/cart/add?product=${productId}`, {})
+  }
+
+  static async removeFromCart(productId: number) {
+    return API.post(`/cart/remove?product=${productId}`, {})
   }
 }
