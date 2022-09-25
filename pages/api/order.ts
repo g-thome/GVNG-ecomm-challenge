@@ -13,9 +13,7 @@ const placeOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   if (!products || !Array.isArray(products) || !products.length) {
     return res.status(400).json({ error: "body must contain an array of products" })
   }
-
-  console.log("products: ", products)
-
+  
   const order = await prismaClient.order.create({
     data: {
       summary: JSON.stringify({

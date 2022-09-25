@@ -10,8 +10,10 @@ import { useRouter } from "next/router";
 
 const ShoppingCartButton: React.FC = (): ReactElement => {
   const [anchorEl, setAnchorEl] = React.useState<SVGSVGElement | null>(null)
-  const [cartCost, setCartCost] = useState<Omit<Summary, "products">>({total: 0, taxes: 0, subtotal: 0})
+  const [cartCost, setCartCost] = useState<Omit<Summary, "products">>({ total: 0, taxes: 0, subtotal: 0 })
+  const [cartSize, setCartSize] = useState<number>(0)  
   const { cart, dispatch } = useShoppingCartContext()
+
   const router = useRouter()
 
   useEffect(() => {
@@ -21,7 +23,7 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
 
     const taxes = Math.round((beforeTaxes * TAX_PERCENTAGE) * 100) / 100
 
-    const afterTaxes = beforeTaxes + taxes
+    const afterTaxes = Math.round((beforeTaxes + taxes) * 100) / 100
 
     setCartCost({
       subtotal: beforeTaxes,
@@ -29,6 +31,7 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
       total: afterTaxes
     })
 
+    setCartSize(cart.reduce((acc, cur) => acc + (1 * cur.quantity), 0))
   }, [cart])
 
   const show = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -80,7 +83,12 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
 
   return (
     <>
-      <ShoppingCartIcon style={{ cursor: "pointer" }} onClick={show} />
+      <div style={{position: "relative"}}>
+        <ShoppingCartIcon style={{ cursor: "pointer" }} onClick={show} />
+        <div style={{ backgroundColor: "red", position: "absolute", top: "-25%", right: "-25%", borderRadius: "50%", textAlign: "center", width: "20px", height: "20px" }}>
+          {cartSize}
+        </div>
+      </div>
       <Popover
         open={open}
         anchorEl={anchorEl}

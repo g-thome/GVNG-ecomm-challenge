@@ -25,8 +25,9 @@ type CartAction = {
 const addProductToCart = (cart: ICartProduct[], product: ICartProduct) => {
   const productIndex = cart.findIndex(p => p.id === product.id)
   if (productIndex !== -1) {
-    cart[productIndex].quantity++
-    return cart
+    const newCart = [...cart]
+    newCart[productIndex].quantity++
+    return newCart
   }
   
   const cartWithNewItem = [...cart, {
@@ -75,9 +76,9 @@ export const ShoppingCartProvider: React.FC<ShoppingCartProviderProps> = ({ chil
     id: d.product.id,
     quantity: d.quantity,
     price: Number(d.product.price)
-  }))
+  })) || []
   
-  const [cart, dispatch] = useReducer<React.Reducer<ICartProduct[], CartAction>>(reducer, initialCart || [])
+  const [cart, dispatch] = useReducer<React.Reducer<ICartProduct[], CartAction>>(reducer, initialCart)
   return (
     <ShoppingCartContext.Provider value={{ cart, dispatch }}>
       {children}
