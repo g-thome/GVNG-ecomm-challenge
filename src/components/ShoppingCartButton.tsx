@@ -1,18 +1,44 @@
 import { ShoppingCart as ShoppingCartIcon, RemoveCircle } from "@mui/icons-material";
 import { Popover, Typography, Box, List, ListItem } from "@mui/material";
-import React, { ReactElement } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { ShoppingCartActionType, useShoppingCartContext } from "../context/ShoppingCart";
 import { API } from "../API"
+import { TAX_PERCENTAGE } from "../constants"
+import { numberToMoney } from "../utils";
+
+interface CartCost {
+  total: number
+  taxes: number
+  subtotal: number
+}
 
 const ShoppingCartButton: React.FC = (): ReactElement => {
   const [anchorEl, setAnchorEl] = React.useState<SVGSVGElement | null>(null)
+  const [cartCost, setCartCost] = useState<CartCost>({total: 0, taxes: 0, subtotal: 0})
   const { cart, dispatch } = useShoppingCartContext()
 
-  const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
+  useEffect(() => {
+    const beforeTaxes = Math.round(cart.reduce((acc, cur) => {
+      return acc + (cur.price * cur.quantity)
+    }, 0) * 100) / 100
+
+    const taxes = Math.round((beforeTaxes * TAX_PERCENTAGE) * 100) / 100
+
+    const afterTaxes = beforeTaxes + taxes
+
+    setCartCost({
+      subtotal: beforeTaxes,
+      taxes,
+      total: afterTaxes
+    })
+
+  }, [cart])
+
+  const show = (event: React.MouseEvent<SVGSVGElement>) => {
     setAnchorEl(event.currentTarget)
   }
 
-  const handleClose = () => {
+  const close = () => {
     setAnchorEl(null)
   }
 
@@ -40,11 +66,11 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
 
   return (
     <>
-      <ShoppingCartIcon style={{ cursor: "pointer" }} onClick={handleClick} />
+      <ShoppingCartIcon style={{ cursor: "pointer" }} onClick={show} />
       <Popover
         open={open}
         anchorEl={anchorEl}
-        onClose={handleClose}
+        onClose={close}
         anchorOrigin={{
           vertical: "bottom",
           horizontal: "left"
@@ -69,6 +95,9 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
                 />
               </ListItem>)}
           </List>
+          <Typography fontWeight={800}>Subtotal: {numberToMoney(cartCost.subtotal)}</Typography>
+          <Typography fontWeight={800}>Taxes: {numberToMoney(cartCost.taxes)}</Typography>
+          <Typography fontWeight={800}>Total: {numberToMoney(cartCost.total)}</Typography>
           </Box>
       </Popover>
     </>

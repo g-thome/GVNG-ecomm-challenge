@@ -15,7 +15,14 @@ const ProductCard: React.FC<ProductCardProps> = (props: ProductCardProps): React
   const { dispatch } = useShoppingCartContext()
 
   const handleAddToCartClick = () => {
-    dispatch({ type: ShoppingCartActionType.ADD, productId: props.productId, productName: props.productName })
+    dispatch({
+      type: ShoppingCartActionType.ADD,
+      product: {
+        id: props.productId,
+        name: props.productName,
+        price: props.productPrice
+      }
+    })
     
     API.addToCart(props.productId)
       .then(res => {

@@ -2,6 +2,7 @@ export interface ICartProduct {
   id: number
   name: string
   quantity: number
+  price: number
 }
 
 export interface CartProductFromAPI {

@@ -16,23 +16,23 @@ export enum ShoppingCartActionType {
 
 type CartAction = {
   type: ShoppingCartActionType.ADD,
-  productId: number,
-  productName: string
+  product: ICartProduct
 } | {
   type: ShoppingCartActionType.REMOVE,
   productId: number
 }
 
-const addProductToCart = (cart: ICartProduct[], productName: string, productId: number) => {
-  const productIndex = cart.findIndex(p => p.id === productId)
+const addProductToCart = (cart: ICartProduct[], product: ICartProduct) => {
+  const productIndex = cart.findIndex(p => p.id === product.id)
   if (productIndex !== -1) {
     cart[productIndex].quantity++
     return cart
   }
   
   const cartWithNewItem = [...cart, {
-    id: productId,
-    name: productName,
+    id: product.id,
+    name: product.name,
+    price: product.price,
     quantity: 1
   }]
   return cartWithNewItem
@@ -53,7 +53,7 @@ const removeProductFromCart = (cart: ICartProduct[], productId: number) => {
 const reducer = (state: ICartProduct[], action: CartAction): ICartProduct[] => {
   switch (action.type) {
     case ShoppingCartActionType.ADD:
-      return addProductToCart(state, action.productName, action.productId)
+      return addProductToCart(state, action.product)
     case ShoppingCartActionType.REMOVE:
       return removeProductFromCart(state, action.productId)
     default:
@@ -70,8 +70,13 @@ interface ShoppingCartProviderProps {
 export const ShoppingCartProvider: React.FC<ShoppingCartProviderProps> = ({ children }): React.ReactElement => {
   const { data } = useSWR<CartProductFromAPI[]>(API_URL + "/cart", fetcher)
 
-  const initialCart = data?.map(d => ({name: d.product.name, id: d.product.id, quantity: d.quantity }))
-
+  const initialCart = data?.map(d => ({
+    name: d.product.name,
+    id: d.product.id,
+    quantity: d.quantity,
+    price: Number(d.product.price)
+  }))
+  
   const [cart, dispatch] = useReducer<React.Reducer<ICartProduct[], CartAction>>(reducer, initialCart || [])
   return (
     <ShoppingCartContext.Provider value={{ cart, dispatch }}>
