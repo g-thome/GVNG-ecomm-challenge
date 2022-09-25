@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useReducer, ReactNode } from "react"
-import { ICartProduct } from "../types"
+import useSWR from "swr"
+import { API_URL } from "../constants"
+import { ICartProduct, CartProductFromAPI } from "../types"
+import { fetcher } from "../utils"
 
 export const ShoppingCartContext = createContext<{cart: ICartProduct[], dispatch: Function}>({
   cart: [],
@@ -60,9 +63,16 @@ const reducer = (state: ICartProduct[], action: CartAction): ICartProduct[] => {
 
 export const useShoppingCartContext = () => useContext(ShoppingCartContext)
 
-export const ShoppingCartProvider: React.FC<{ children: ReactNode }> = ({ children }): React.ReactElement => {
-  const [cart, dispatch] = useReducer<React.Reducer<ICartProduct[], CartAction>>(reducer, [])
-  
+interface ShoppingCartProviderProps {
+  children: ReactNode
+}
+
+export const ShoppingCartProvider: React.FC<ShoppingCartProviderProps> = ({ children }): React.ReactElement => {
+  const { data } = useSWR<CartProductFromAPI[]>(API_URL + "/cart", fetcher)
+
+  const initialCart = data?.map(d => ({name: d.product.name, id: d.product.id, quantity: d.quantity }))
+
+  const [cart, dispatch] = useReducer<React.Reducer<ICartProduct[], CartAction>>(reducer, initialCart || [])
   return (
     <ShoppingCartContext.Provider value={{ cart, dispatch }}>
       {children}
