@@ -24,7 +24,6 @@ const addProductToCart = (cart: ICartProduct[], productName: string, productId: 
   const productIndex = cart.findIndex(p => p.id === productId)
   if (productIndex !== -1) {
     cart[productIndex].quantity++
-    localStorage.setItem("cart", JSON.stringify(cart))
     return cart
   }
   
@@ -33,7 +32,6 @@ const addProductToCart = (cart: ICartProduct[], productName: string, productId: 
     name: productName,
     quantity: 1
   }]
-  localStorage.setItem("cart", JSON.stringify(cartWithNewItem))
   return cartWithNewItem
 }
 
@@ -42,12 +40,10 @@ const removeProductFromCart = (cart: ICartProduct[], productId: number) => {
   const productIndex = newCart.findIndex(p => p.id === productId)
   if (newCart[productIndex].quantity === 1) {
     newCart.splice(productIndex, 1)
-    localStorage.setItem("cart", JSON.stringify(newCart))
     return newCart
   }
 
   newCart[productIndex].quantity--
-  localStorage.setItem("cart", JSON.stringify(newCart))
   return newCart
 }
 
