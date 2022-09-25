@@ -15,3 +15,10 @@ export interface CartProductFromAPI {
   },
   quantity: number
 }
+
+export interface Summary {
+  products: number[]
+  subtotal: number
+  taxes: number
+  total: number
+}

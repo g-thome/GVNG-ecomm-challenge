@@ -1,21 +1,18 @@
 import { ShoppingCart as ShoppingCartIcon, RemoveCircle } from "@mui/icons-material";
-import { Popover, Typography, Box, List, ListItem } from "@mui/material";
+import { Popover, Typography, Box, List, ListItem, Button } from "@mui/material";
 import React, { ReactElement, useEffect, useState } from "react";
 import { ShoppingCartActionType, useShoppingCartContext } from "../context/ShoppingCart";
 import { API } from "../API"
 import { TAX_PERCENTAGE } from "../constants"
 import { numberToMoney } from "../utils";
-
-interface CartCost {
-  total: number
-  taxes: number
-  subtotal: number
-}
+import { Summary } from "../types";
+import { useRouter } from "next/router";
 
 const ShoppingCartButton: React.FC = (): ReactElement => {
   const [anchorEl, setAnchorEl] = React.useState<SVGSVGElement | null>(null)
-  const [cartCost, setCartCost] = useState<CartCost>({total: 0, taxes: 0, subtotal: 0})
+  const [cartCost, setCartCost] = useState<Omit<Summary, "products">>({total: 0, taxes: 0, subtotal: 0})
   const { cart, dispatch } = useShoppingCartContext()
+  const router = useRouter()
 
   useEffect(() => {
     const beforeTaxes = Math.round(cart.reduce((acc, cur) => {
@@ -64,6 +61,23 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
       })
   }
 
+  const handleCheckoutClick = async () => {
+    try {
+      const { id: orderId } = await API.placeOrder({
+        products: cart.map(p => p.id),
+        ...cartCost
+      })
+
+      if (!orderId) {
+        alert("error placing your order")
+      }
+
+      router.push(`/checkout/${orderId}`)
+    } catch (e) {
+      alert("Error placing your order")
+    }
+  }
+
   return (
     <>
       <ShoppingCartIcon style={{ cursor: "pointer" }} onClick={show} />
@@ -77,28 +91,34 @@ const ShoppingCartButton: React.FC = (): ReactElement => {
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography fontWeight={800}>Shoping Cart</Typography>
-          <List>
-            {cart.map(p =>
-              <ListItem key={p.id} sx={{
-                display: "flex",
-                alignItems: "center",
-                columnGap: "5px",
-                padding: 0
-              }}>
-                {p.name} x{p.quantity}
-                <RemoveCircle
-                  data-product-id={p.id}
-                  onClick={handleRemoveProductClick}
-                  htmlColor="red"
-                  sx={{ "&:hover": { cursor: "pointer" } }}
-                />
-              </ListItem>)}
-          </List>
-          <Typography fontWeight={800}>Subtotal: {numberToMoney(cartCost.subtotal)}</Typography>
-          <Typography fontWeight={800}>Taxes: {numberToMoney(cartCost.taxes)}</Typography>
-          <Typography fontWeight={800}>Total: {numberToMoney(cartCost.total)}</Typography>
-          </Box>
+          {cart.length ?
+            <>
+              <Typography fontWeight={800}>Shoping Cart</Typography>
+              <List>
+                {cart.map(p =>
+                  <ListItem key={p.id} sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    columnGap: "5px",
+                    padding: 0
+                  }}>
+                    {p.name} x{p.quantity}
+                    <RemoveCircle
+                      data-product-id={p.id}
+                      onClick={handleRemoveProductClick}
+                      htmlColor="red"
+                      sx={{ "&:hover": { cursor: "pointer" } }}
+                    />
+                  </ListItem>)}
+              </List>
+              <Typography fontWeight={800}>Subtotal: {numberToMoney(cartCost.subtotal)}</Typography>
+              <Typography fontWeight={800}>Taxes: {numberToMoney(cartCost.taxes)}</Typography>
+              <Typography fontWeight={800}>Total: {numberToMoney(cartCost.total)}</Typography>
+              <Button variant="contained" onClick={handleCheckoutClick}>CHECKOUT</Button>
+            </>:
+            <Typography>Your cart is empty! Go shop!</Typography>
+          }
+        </Box>
       </Popover>
     </>
   )
