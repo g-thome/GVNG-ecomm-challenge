@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prismaClient from "../../../src/database";
+import { removeFromCart } from "../../../src/database/cart"
 
 async function remove(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return
@@ -12,37 +12,8 @@ async function remove(req: NextApiRequest, res: NextApiResponse) {
     }) 
   }
 
-  const productInCart = await prismaClient.shoppingCart.findFirst({
-    where: {
-      productId: Number(productId)
-    }
-  })
-
-  if (!productInCart) {
-    return res.status(404).json({
-      error: "Trying to delete an item that is not in the cart"
-    })
-  }
-
   try {
-    if (productInCart.quantity === 1) {
-      await prismaClient.shoppingCart.delete({
-        where: {
-          productId: Number(productId)
-        }
-      })
-      return res.status(200).json({})
-    }
-  
-    await prismaClient.shoppingCart.update({
-      where: {
-        productId: Number(productId)
-      },
-      data: {
-        quantity: productInCart.quantity-1
-      }
-    })
-  
+    await removeFromCart(Number(productId))
     return res.status(200).json({})
   } catch (e: unknown) {
     const { message } = e as Error
