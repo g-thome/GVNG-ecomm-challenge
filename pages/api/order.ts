@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import prismaClient from "../../src/database"
+import { getOrderById } from "../../src/database/order"
 
 const placeOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   const { products, total, subtotal, taxes } = req.body
@@ -35,22 +36,13 @@ const getOrder = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: "Request body must contain id"})
   }
 
-  const result = await prismaClient.order.findFirst({
-    where: {
-      id: Number(id)
-    }
-  })
+  const order = await getOrderById(Number(id))
 
-  if (!result) {
+  if (!order) {
     return res.status(404)
   }
 
-  const summary = JSON.parse(result.summary)
-
-  return res.status(200).json({
-    id: result.id,
-    ...summary
-  })
+  return res.status(200).json(order)
 }
 
 const order = async (req: NextApiRequest, res: NextApiResponse) => {
