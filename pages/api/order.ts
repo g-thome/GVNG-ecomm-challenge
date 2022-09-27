@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import prismaClient from "../../src/database"
-import { getOrderById } from "../../src/database/order"
+import { createOrder, getOrderById } from "../../src/database/order"
 
 const placeOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   const { products, total, subtotal, taxes } = req.body
@@ -15,16 +14,7 @@ const placeOrder = async (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ error: "body must contain an array of products" })
   }
   
-  const order = await prismaClient.order.create({
-    data: {
-      summary: JSON.stringify({
-        products, 
-        total,
-        subtotal,
-        taxes
-      })
-    }
-  })
+  const order = await createOrder({ products, total, subtotal, taxes })
 
   return res.status(200).json({ id: order.id })
 }

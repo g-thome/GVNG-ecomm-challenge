@@ -16,3 +16,18 @@ export const getOrderById = async (id: number) => {
     ...summary
   }
 }
+
+type CreateOrderParams = {
+  products: number[]
+  total: number
+  subtotal: number
+  taxes: number
+}
+
+export const createOrder = async (summary: CreateOrderParams) => {
+  return prismaClient.order.create({
+    data: {
+      summary: JSON.stringify(summary)
+    }
+  })
+}
