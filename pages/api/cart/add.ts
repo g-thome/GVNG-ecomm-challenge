@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import prismaClient from "../../../src/database";
+import { addToCart } from "../../../src/database/cart";
 
 async function add(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -15,33 +15,8 @@ async function add(req: NextApiRequest, res: NextApiResponse) {
     return
   }
 
-  const productInCart = await prismaClient.shoppingCart.findFirst({
-    where: {
-      productId: Number(productId)
-    }
-  })
-
   try {
-    if (!productInCart) {
-      await prismaClient.shoppingCart.create({
-        data: {
-          productId: Number(productId),
-          quantity: 1
-        }
-      })
-      res.status(200).json({})
-      return
-    }
-  
-    await prismaClient.shoppingCart.update({
-      where: {
-        productId: Number(productId)
-      },
-      data: {
-        quantity: productInCart.quantity+1
-      }
-    })
-  
+    await addToCart(Number(productId))
     res.status(200).json({})
   } catch (e: unknown) {
     const { message } = e as Error
